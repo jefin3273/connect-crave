@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useCart } from "@/components/cart/cart-provider";
 import { Trash2, Plus, Minus } from "lucide-react";
 
@@ -57,6 +58,15 @@ export default function CartPage() {
           </div>
           <div className="bg-white shadow rounded-lg p-6">
             <h2 className="text-2xl font-bold mb-4">Order Summary</h2>
+
+            {/* Mocked store points - replace with real data */}
+            <div className="mb-4">
+              <h3 className="font-medium mb-2">Available discounts from mall partners</h3>
+              <p className="text-sm text-gray-500 mb-2">Select a discount to apply points from partner stores.</p>
+
+              <DiscountSelector totalPrice={totalPrice} />
+            </div>
+
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span>Total Items</span>
@@ -72,6 +82,61 @@ export default function CartPage() {
             </button>
           </div>
         </div>
+      )}
+    </div>
+  );
+}
+
+function DiscountSelector({ totalPrice }: { totalPrice: number }) {
+  // Mock partners and points. In reality load from user profile / API
+  const partners = [
+    { id: "mall_a", name: "Mall A Rewards", points: 1200, valuePerPoint: 0.01 },
+    { id: "store_b", name: "Store B Points", points: 500, valuePerPoint: 0.02 },
+    { id: "shop_c", name: "Shop C Credits", points: 300, valuePerPoint: 0.015 },
+  ];
+
+  const [selected, setSelected] = useState<string | null>(null);
+  const [appliedAmount, setAppliedAmount] = useState(0);
+
+  useEffect(() => {
+    // reset when total changes
+    setSelected(null);
+    setAppliedAmount(0);
+  }, [totalPrice]);
+
+  const applyPartner = (p: typeof partners[number]) => {
+    setSelected(p.id);
+    // user can apply up to points * valuePerPoint but not more than totalPrice
+    const maxValue = p.points * p.valuePerPoint;
+    setAppliedAmount(Math.min(maxValue, totalPrice));
+  };
+
+  return (
+    <div>
+      <div className="space-y-2">
+        {partners.map((p) => (
+          <div key={p.id} className="flex items-center justify-between">
+            <div>
+              <div className="font-medium">{p.name}</div>
+              <div className="text-sm text-gray-500">{p.points} points</div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => applyPartner(p)}
+                className={`px-3 py-1 rounded ${selected === p.id ? "bg-green-600 text-white" : "bg-gray-100 text-gray-700"}`}
+              >
+                Apply
+              </button>
+              {selected === p.id && (
+                <div className="text-sm text-gray-700">-₹{appliedAmount.toFixed(2)}</div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {selected && (
+        <div className="mt-3 text-sm text-gray-600">Discount applied from partner: {selected}</div>
       )}
     </div>
   );

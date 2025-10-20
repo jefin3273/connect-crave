@@ -45,3 +45,40 @@ export async function POST(request: Request) {
   }
 }
 
+export async function GET() {
+  try {
+    const orders = await prisma.order.findMany({
+      select: {
+        id: true,
+        status: true,
+        totalAmount: true,
+        createdAt: true,
+        orderItems: {
+          select: {
+            id: true,
+            name: true,
+            price: true,
+            quantity: true,
+            restaurant: {
+              select: { name: true },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 50, // Limit to last 50 orders for performance
+    });
+
+    return NextResponse.json(orders, {
+      headers: {
+        'Cache-Control': 'private, no-cache, must-revalidate',
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
+  }
+}
+
