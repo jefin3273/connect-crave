@@ -1,6 +1,6 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { FoodStallCard } from "@/components/food-stall-card";
@@ -27,10 +27,10 @@ async function fetchRestaurantsClient() {
   }
 }
 
-export default function Home() {
+function HomeContent() {
   const searchParams = useSearchParams();
   const seat = searchParams.get("seat");
-
+  
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,7 +73,7 @@ export default function Home() {
               <p className="text-sm text-gray-600">Your seat:</p>
               <p className="text-lg font-bold text-green-700">Seat {seat}</p>
             </div>
-            <Link
+            <Link 
               href="/seats"
               className="text-sm text-green-600 hover:text-green-800 underline"
             >
@@ -86,7 +86,7 @@ export default function Home() {
         {!seat ? (
           <div className="text-center bg-white p-8 rounded-lg shadow">
             <p className="text-gray-600 mb-4">Please select a seat to browse restaurants.</p>
-            <Link
+            <Link 
               href="/seats"
               className="inline-block bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 font-medium"
             >
@@ -127,5 +127,24 @@ export default function Home() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50">
+        <main className="container mx-auto px-4 py-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">
+            Welcome to the Mall Food Court
+          </h2>
+          <div className="text-center bg-white p-8 rounded-lg shadow">
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </main>
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }
